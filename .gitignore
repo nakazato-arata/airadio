@@ -1,0 +1,4 @@
+work/wav/*
+work/__pycache__/*
+work/.env
+work05/__pycache__/*

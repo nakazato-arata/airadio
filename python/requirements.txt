@@ -1,0 +1,5 @@
+requests
+flask
+debugpy
+ptvsd
+openai

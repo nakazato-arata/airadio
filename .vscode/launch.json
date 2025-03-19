@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Docker コンテナ内の Python デバッグ",
+      "type": "python",
+      "request": "attach",
+
+      "localRoot": "/home/kuuen/python-project/work",
+      "remoteRoot": "/work/",
+
+      "connect": {
+        "host": "localhost",
+        "port": 5001
+      },
+      "justMyCode": true
+    }
+  ]
+}
