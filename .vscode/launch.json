@@ -6,7 +6,7 @@
       "type": "python",
       "request": "attach",
 
-      "localRoot": "/home/kuuen/python-project/work",
+      "localRoot": "/home/kuuen/airadio/work",
       "remoteRoot": "/work/",
 
       "connect": {

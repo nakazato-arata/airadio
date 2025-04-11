@@ -5,9 +5,9 @@ services:
     build: python
     container_name: python_app_container
     ports:
-      - "9540:9540"
-      - "9541:9541"
-      - "9542:9542"
+      - "8000:9540"
+      - "8001:9541"
+      - "8002:9542"
       - "5001:5001"  # デバッガ用ポート
     volumes:
       - ./work:/work
