@@ -402,7 +402,7 @@ async def openAiRequest(text):
     completion = client.chat.completions.create(
         model="grok-2-latest",
         messages=messages,
-        temperature=1,
+        temperature=1.0,
     )
 
     response_text = completion.choices[0].message.content
@@ -586,7 +586,7 @@ async def handle_client(websocket):
                 await websocket.send(json.dumps({"error": "Invalid JSON"}))
 
     except websockets.exceptions.ConnectionClosed:
-        print(f"Client disconnected: {websocket.remote_address}")
+        print(f"notif Client disconnected: {websocket.remote_address}")
 
     finally:
         connected_clients.remove(websocket)
@@ -692,7 +692,6 @@ async def kokokara_message():
                 "沖縄の春のイベントについて教えてください",
                 "沖縄の祭りについて教えてください",
                 "沖縄の不思議な話をしてください",
-                "ドラゴンクエストウォークでは現在ドラゴンボールのコラボレーションイベントが開催されています。筋斗雲にのって日本を駆け巡ることができます。",
                 "日本のカレーとインドカレーの違いについて教えてください",
                 "とんかつの歴史について教えてください",
                 "ステーキの意味について教えてください",

@@ -6,19 +6,18 @@ print("Waiting for debugger to attach...")  # デバッガが接続されるま�
 debugpy.wait_for_client()
 
 import asyncio
+import websockets
 from rcev import listenRcev
-# from fileDownload import listenFileDownload
-# from notif import listenNotif
-from stream import listenStream
+from fileDownload import listenFileDownload
+from notif import listenNotif
 
 
 async def main():
     """ WebSocket サーバーを3つ並行実行 """
     await asyncio.gather(
         listenRcev(),          # メッセージ受信
-        # listenFileDownload(),  # ファイルダウンロード
-        # listenNotif()          # 通知送信
-        listenStream()
+        listenFileDownload(),  # ファイルダウンロード
+        listenNotif()          # 通知送信
     )
 
 if __name__ == "__main__":

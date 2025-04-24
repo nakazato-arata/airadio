@@ -2,7 +2,7 @@ import asyncio
 import websockets
 import json
 import traceback
-import stream
+import notif
 
 HOST = "0.0.0.0"
 PORT = 9540
@@ -33,7 +33,7 @@ async def handle_client(websocket):
                     # # クライアントに返信
                     # await websocket.send(json.dumps(response))
 
-                    stream.msgQueue.append(value)
+                    notif.msgQueue.append(value)
 
             except json.JSONDecodeError:
                 print("⚠️ JSON の解析に失敗")
