@@ -476,7 +476,9 @@ async def voicevoxRequest(text):
     text_chunks = [text[i:i+100] for i in range(0, len(text), 100)]
     files = []
 
-    async with aiohttp.ClientSession() as session:
+    connector = aiohttp.TCPConnector(ssl=False)
+
+    async with aiohttp.ClientSession(connector=connector) as session:
 
         for idx, chunk in enumerate(text_chunks):
             encoded_text = urllib.parse.quote(chunk, encoding="utf-8")

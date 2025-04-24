@@ -13,9 +13,9 @@ services:
       - ./work:/work
     environment:
       - PYTHONUNBUFFERED=1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     working_dir: /work
     env_file:
       - .env  # ← ここで .env ファイルを指定    
-    environment:
-      - PYTHONUNBUFFERED=1    
     command: ["python", "app.py"]

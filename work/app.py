@@ -1,9 +1,9 @@
-import debugpy
+# import debugpy
 
-# デバッグ用のポートを開放（VSCode から接続可能） VScodeでデバッグを行う。　本番稼働時はコメントアウト
-debugpy.listen(("0.0.0.0", 5001))
-print("Waiting for debugger to attach...")  # デバッガが接続されるまで待機
-debugpy.wait_for_client()
+# # デバッグ用のポートを開放（VSCode から接続可能） VScodeでデバッグを行う。　本番稼働時はコメントアウト
+# debugpy.listen(("0.0.0.0", 5001))
+# print("Waiting for debugger to attach...")  # デバッガが接続されるまで待機
+# debugpy.wait_for_client()
 
 import asyncio
 from rcev import listenRcev
