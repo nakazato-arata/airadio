@@ -424,34 +424,49 @@ async def openAiRequest(text):
 def merge_wav_to_mp3(files, file_list):
     current_date = datetime.now().strftime("%Y%m%d%H%M%S") + f"{datetime.now().microsecond // 1000:03d}"
     # list_file_path = os.path.join(WAV_DIR, f"file_list{current_date}.txt")
-    output_mp3_path = os.path.join(WAV_DIR, f"output_{current_date}.mp3")
+    # output_mp3_path = os.path.join(WAV_DIR, f"output_{current_date}.mp3")
+    output_ogg_path = os.path.join(WAV_DIR, f"output_{current_date}.ogg")
 
     # file_list.txt を作成
     with open(WAV_DIR + file_list, "w") as f:
         for file in files:
             f.write(f"file '{os.path.join(file)}'\n")
 
-    # ffmpeg コマンドを実行
+    # ffmpeg コマンドを実行 mp3
+    # command = [
+    #     "ffmpeg",
+    #     "-f", "concat",
+    #     "-safe", "0",
+    #     "-i", WAV_DIR + file_list,
+    #     "-c:a", "libmp3lame",
+    #     "-q:a", "5",  # MP3の品質設定（2は高品質、値が小さいほど高品質）
+    #     output_mp3_path
+    # ]
+
+    # ogg
     command = [
         "ffmpeg",
         "-f", "concat",
         "-safe", "0",
         "-i", WAV_DIR + file_list,
-        "-c:a", "libmp3lame",
-        "-q:a", "5",  # MP3の品質設定（2は高品質、値が小さいほど高品質）
-        output_mp3_path
+        "-c:a", "libopus",  # or libvorbis if you prefer
+        "-b:a", "24k",
+        output_ogg_path
     ]
+    
 
     try:
         result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        print("✅ MP3 変換成功:", output_mp3_path)
+        # print("✅ MP3 変換成功:", output_mp3_path)
+        print("✅ MP3 変換成功:", output_ogg_path)        
     except subprocess.CalledProcessError as e:
         print("⚠️ ffmpegエラー:", e.stderr)
 
     # 作成したリストファイルを削除
     os.remove(WAV_DIR + file_list)
 
-    return output_mp3_path
+    # return output_mp3_path
+    return output_ogg_path
 
 async def voicevoxRequest(text):
 
