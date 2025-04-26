@@ -14,6 +14,7 @@ from pydub import AudioSegment
 import ffmpeg
 import subprocess
 import aiohttp
+import re
 
 VOICE_VOX_API_URL = "http://host.docker.internal:50021"
 
@@ -30,10 +31,12 @@ XAI_API_KEY = os.getenv("XAI_API_KEY")
 AI_URL = os.getenv("AI_URL")
 
 # AI のキャラ設定
-seikaku = "ラジオ番組のパーソナリティとなってください。応答は200文字程度でお願いします。英単語はヒラガナに直してください"
+seikaku = "ラジオのパーソナリティを演じてください。登場人物は2人で発言はそれぞれAさんBさんになります。Aさんがお便りを読みBがアシストしてください。発言はA「」として「」内に発言してください。Aさんは進行、Bさんは補足して疑問があれば発言してください。1会の発言につき200文字程度でお願いします。英単語はヒラガナに直してください。"
+
 
 seikakuYoru = "中二病である四国めたんでニュースを読み上げるラジオ番組のパーソナリティとなってください。英単語はヒラガナに直してください"
-seikakuYoru += "白を基調としたロリィタファッション（※混同されることもあるがゴスロリではなく白ロリ）に、ピンク色のツインドリルヘアが特徴の少女。わずかな違いなのだが実は前髪の長さが左右非対称。（左側がやや長い。）作画カロリーが高いと言われている。"
+seikakuYoru = "ラジオのパーソナリティを演じてください。登場人物は2人で発言はそれぞれAさん(四国めたん)Bさん(ずんだもん)になります。Aさんがお便りを読みBがアシストしてください。発言はA「」として「」内に発言してください。Aさんは進行、Bさんは補足して疑問があれば発言してください。1会の発言につき200文字程度でお願いします。英単語はヒラガナに直してください。"
+seikakuYoru += "四国めたんは白を基調としたロリィタファッション（※混同されることもあるがゴスロリではなく白ロリ）に、ピンク色のツインドリルヘアが特徴の少女。わずかな違いなのだが実は前髪の長さが左右非対称。（左側がやや長い。）作画カロリーが高いと言われている。"
 seikakuYoru += "ずん子より小柄だが、着痩せするタイプで胸は大きい。（公式では薄着だとずん子よりも大きく描かれている。）"
 seikakuYoru += "南海トラフ沖に埋蔵しているとされるメタンハイドレートと、鳴門の渦潮がモチーフと思われる。"
 seikakuYoru += "ずん子とはクラスメイトで親友の間柄にある。普段は地味な感じで過ごしているらしく、ずん子は東北家に現れるまではめたんが同級生だと気づいていなかったらしい。部活はやっていなかったが、『ずんちゃんといっしょ!』14話で、ずん子に無理矢理弓道部に入れられる。"
@@ -49,6 +52,7 @@ seikakuYoru += "発想力に優れ、中二病的な当て字をするのが得�
 seikakuYoru += "【四国めたんの喋り方の特徴】"
 seikakuYoru += "誰にでも基本的にタメ口"
 seikakuYoru += "「~かしら」、「~わよ」のような高飛車な口調"
+seikakuYoru += "ずんだもんはずんだの妖精で、ずん子が所持している弓の「ずんだアロー」や（2021年6月以降の設定では）人間の姿に変身できる。ずんだ餅を食べることで知性が上がるとされている[2]。不憫な目に合うことが多い[3]。一人称は「ボク」。公式の設定では女の子であるという設定であるが、UGCでは中性的な見た目から性別は様々に設定されている。趣味はその辺をふらふらすること、自分を大きく見せること。誕生日は12月5日。語尾に「～（な）のだ」をつけて喋る"
 
 seikakuYoru += "中二病単語集 以下は 読み:意味 となります"
 seikakuYoru += "トワイライト：黄昏"
@@ -407,7 +411,7 @@ async def openAiRequest(text):
 
     response_text = completion.choices[0].message.content
     messages.append({"role": "assistant", "content": response_text})
-
+    print(response_text)
     # 履歴が10件以上なら古いものを削除
     if len(messages) > 5:
         messages.pop(1)
@@ -468,37 +472,173 @@ def merge_wav_to_mp3(files, file_list):
     # return output_mp3_path
     return output_ogg_path
 
+# async def voicevoxRequestOld(text):
+
+#     # 22:00（夜10時）と 3:00（朝3時）の基準時刻を定義
+#     global start_night
+#     global end_night
+
+#     # 声を時間で変える---------------------------------------------------
+#     # 現在の時刻を取得
+#     current_time = datetime.now().time()
+
+
+
+#     # 条件に基づいて speaker の値を変更
+#     if current_time >= start_night or current_time < end_night:
+#         speaker = "37"
+#     else:
+#         speaker = "2"
+#     # 声を時間で変える---------------------------------------------------        
+
+#     """ VoiceVox に100文字ずつ分割リクエストを送り、音声ファイルを生成する (文字列が長いとエラーになる)"""
+#     text_chunks = [text[i:i+100] for i in range(0, len(text), 100)]
+#     files = []
+
+#     connector = aiohttp.TCPConnector(ssl=False)
+
+#     async with aiohttp.ClientSession(connector=connector) as session:
+
+#         for idx, chunk in enumerate(text_chunks):
+#             encoded_text = urllib.parse.quote(chunk, encoding="utf-8")
+#             query_url = f"{VOICE_VOX_API_URL}/audio_query?text={encoded_text}&speaker=" + speaker
+
+
+#             try:
+#                 async with session.post(query_url, timeout=10) as query_response:
+#                     query_data = await query_response.json()
+#             except Exception as e:
+#                 print(f"⚠️ ERROR: Query failed - {e}")
+#                 return
+
+#             synthesis_url = f"{VOICE_VOX_API_URL}/synthesis?speaker=" + speaker
+#             try:
+#                 async with session.post(synthesis_url, json=query_data, timeout=20) as audio_response:
+#                     audio_data = await audio_response.read()
+#                     current_date = datetime.now().strftime("%Y%m%d%H%M%S") + f"{datetime.now().microsecond // 1000:03d}"
+#                     file_name = f"output_{current_date}_{idx}.wav"
+
+#                     with open(WAV_DIR + file_name, "wb") as f:
+#                         f.write(audio_data)
+
+#             except Exception as e:
+#                 print(f"⚠️ ERROR: Synthesis failed - {e}")
+#                 return
+
+#             # try:
+#             #     query_response = requests.post(query_url, timeout=5)
+#             #     query_response.raise_for_status()
+#             # except requests.exceptions.RequestException as e:
+#             #     print(f"⚠️ ERROR: Query request failed - {e}")
+#             #     return
+
+#             # synthesis_url = f"{VOICE_VOX_API_URL}/synthesis?speaker=" + speaker
+#             # try:
+#             #     audio_response = requests.post(synthesis_url, json=query_response.json(), timeout=10)
+#             #     audio_response.raise_for_status()
+#             # except requests.exceptions.RequestException as e:
+#             #     print(f"⚠️ ERROR: Synthesis request failed - {e}")
+#             #     return
+
+#             # current_date = datetime.now().strftime("%Y%m%d%H%M%S") + f"{datetime.now().microsecond // 1000:03d}"
+#             # file_name = f"output_{current_date}_{idx}.wav"
+
+#             # with open(WAV_DIR + file_name, "wb") as f:
+#             #     f.write(audio_response.content)
+
+#             initialize_speaker_url = f"{VOICE_VOX_API_URL}/initialize_speaker?speaker=" + speaker
+
+#             # try:
+#             #     audio_response = requests.post(initialize_speaker_url, json=query_response.json(), timeout=10)
+#             #     audio_response.raise_for_status()
+#             # except requests.exceptions.RequestException as e:
+#             #     print(f"⚠️ ERROR: Synthesis request failed - {e}")
+#             #     return
+            
+#             # try:
+#             #     async with session.post(initialize_speaker_url, timeout=10) as query_response:
+#             #         audio_data = await audio_response.read()
+#             # except Exception as e:
+#             #     print(f"⚠️ ERROR: Query failed - {e}")
+#             #     return
+
+#             files.append(file_name)
+
+#     current_date = datetime.now().strftime("%Y%m%d%H%M%S") + f"{datetime.now().microsecond // 1000:03d}"
+#     file_list = f"file_list{current_date}.txt"
+#     with open(WAV_DIR + file_list, "w") as f:
+#         for file in files:
+#             f.write(f"file '{file}'\n")
+
+#     filename = merge_wav_to_mp3(files, file_list)
+
+#     # クライアントへ通知
+#     data = {"action": "fileCreate", "value": filename.replace("wav/", "")}
+#     await broadcast(filename)
+
+# 文字列を登場人物とセリフに分ける
+# 例：
+# A「それでは、リスナーの皆さんからいただいたお便りをご紹介しますね。ペンネーム"おくら"さんからのお便りです。『今日は休日出勤です。涼しいです。明日は休みなので頑張ろうと思います。』というお便りをいただきました。おくらさん、休日出勤お疲れ様です。涼しい中でのお仕事、気持ちよさそうですね。明日はしっかり休んでくださいね。」 B「そうですね、涼しいと仕事もはかどりますよね。おくらさん、明日の休みの予定は何かありますか？リラックスして楽しむといいですね。」
+# 処理結果
+# [
+# 	{"Speaker": "A", "value": "それでは、リスナーの皆さんからいただいたお便りをご紹介しますね..."},
+# 	{"Speaker": "A", "value": "明日はしっかり休んでくださいね"},
+# 	{"Speaker": "B", "value": "そうですね、涼しいと仕事もはかどりますよね..."},
+def splitTextBySpeaker(text, max_length=100):
+    # スピーカーとセリフのペアを抽出
+    pattern = r'([A-Z])「(.*?)」'
+    matches = re.findall(pattern, text)
+
+    result = []
+
+    for speaker, value in matches:
+        # 100文字ごとに分割
+        chunks = [value[i:i+max_length] for i in range(0, len(value), max_length)]
+        for chunk in chunks:
+            result.append({
+                "Speaker": speaker,
+                "value": chunk
+            })
+    
+
+    # return json.dumps(result, indent=2, ensure_ascii=False)
+    return result
+
+# 2人で掛け合いを行う
+# Aさん「発言」Bさん「発言」を受け取り、音声を作成それを結合してoggに結合する
 async def voicevoxRequest(text):
 
     # 22:00（夜10時）と 3:00（朝3時）の基準時刻を定義
     global start_night
     global end_night
 
-    # 声を時間で変える---------------------------------------------------
     # 現在の時刻を取得
     current_time = datetime.now().time()
 
+    metanSannSpeaker = "2"
+    zundamonSpeaker = "1"
 
+    bunkatu = splitTextBySpeaker(text)
 
-    # 条件に基づいて speaker の値を変更
-    if current_time >= start_night or current_time < end_night:
-        speaker = "37"
-    else:
-        speaker = "2"
-    # 声を時間で変える---------------------------------------------------        
-
-    """ VoiceVox にリクエストを送り、音声ファイルを生成する """
-    text_chunks = [text[i:i+100] for i in range(0, len(text), 100)]
     files = []
 
-    connector = aiohttp.TCPConnector(ssl=False)
+    for i, line in enumerate(bunkatu):
+        # print(line['Speaker'])
+        # print(line['value'])
 
-    async with aiohttp.ClientSession(connector=connector) as session:
+        connector = aiohttp.TCPConnector(ssl=False)
 
-        for idx, chunk in enumerate(text_chunks):
-            encoded_text = urllib.parse.quote(chunk, encoding="utf-8")
+        speaker = zundamonSpeaker
+
+        if line['Speaker'] == "A":
+            speaker = zundamonSpeaker
+        else:
+            speaker = metanSannSpeaker
+
+        async with aiohttp.ClientSession(connector=connector) as session:
+
+            encoded_text = urllib.parse.quote(line['value'], encoding="utf-8")
             query_url = f"{VOICE_VOX_API_URL}/audio_query?text={encoded_text}&speaker=" + speaker
-
 
             try:
                 async with session.post(query_url, timeout=10) as query_response:
@@ -512,7 +652,7 @@ async def voicevoxRequest(text):
                 async with session.post(synthesis_url, json=query_data, timeout=20) as audio_response:
                     audio_data = await audio_response.read()
                     current_date = datetime.now().strftime("%Y%m%d%H%M%S") + f"{datetime.now().microsecond // 1000:03d}"
-                    file_name = f"output_{current_date}_{idx}.wav"
+                    file_name = f"output_{current_date}.wav"
 
                     with open(WAV_DIR + file_name, "wb") as f:
                         f.write(audio_data)
@@ -521,42 +661,7 @@ async def voicevoxRequest(text):
                 print(f"⚠️ ERROR: Synthesis failed - {e}")
                 return
 
-            # try:
-            #     query_response = requests.post(query_url, timeout=5)
-            #     query_response.raise_for_status()
-            # except requests.exceptions.RequestException as e:
-            #     print(f"⚠️ ERROR: Query request failed - {e}")
-            #     return
 
-            # synthesis_url = f"{VOICE_VOX_API_URL}/synthesis?speaker=" + speaker
-            # try:
-            #     audio_response = requests.post(synthesis_url, json=query_response.json(), timeout=10)
-            #     audio_response.raise_for_status()
-            # except requests.exceptions.RequestException as e:
-            #     print(f"⚠️ ERROR: Synthesis request failed - {e}")
-            #     return
-
-            # current_date = datetime.now().strftime("%Y%m%d%H%M%S") + f"{datetime.now().microsecond // 1000:03d}"
-            # file_name = f"output_{current_date}_{idx}.wav"
-
-            # with open(WAV_DIR + file_name, "wb") as f:
-            #     f.write(audio_response.content)
-
-            initialize_speaker_url = f"{VOICE_VOX_API_URL}/initialize_speaker?speaker=" + speaker
-
-            # try:
-            #     audio_response = requests.post(initialize_speaker_url, json=query_response.json(), timeout=10)
-            #     audio_response.raise_for_status()
-            # except requests.exceptions.RequestException as e:
-            #     print(f"⚠️ ERROR: Synthesis request failed - {e}")
-            #     return
-            
-            # try:
-            #     async with session.post(initialize_speaker_url, timeout=10) as query_response:
-            #         audio_data = await audio_response.read()
-            # except Exception as e:
-            #     print(f"⚠️ ERROR: Query failed - {e}")
-            #     return
 
             files.append(file_name)
 
@@ -568,9 +673,7 @@ async def voicevoxRequest(text):
 
     filename = merge_wav_to_mp3(files, file_list)
 
-    # クライアントへ通知
-    data = {"action": "fileCreate", "value": filename.replace("wav/", "")}
-    await broadcast(filename)
+    print("ファイル名", filename)
 
 async def handle_client(websocket):
     # クライアントを登録

@@ -14,3 +14,5 @@ debugpy.wait_for_client()
 
 デバッグ時
 VSCodeで行う。python実行後、デバッグ実行を行う。(ロジックで5001ポートを待ち受けを行っていてlistenしないと後続が動かない)  
+
+work/dev →　pythonで挙動確認するときにここに置いて個別に実行する
