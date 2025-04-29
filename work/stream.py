@@ -644,6 +644,7 @@ async def voicevoxRequest(text):
                 async with session.post(query_url, timeout=10) as query_response:
                     query_data = await query_response.json()
             except Exception as e:
+                print(query_url)
                 print(f"⚠️ ERROR: Query failed - {e}")
                 return
 
@@ -674,6 +675,7 @@ async def voicevoxRequest(text):
     filename = merge_wav_to_mp3(files, file_list)
 
     print("ファイル名", filename)
+    await broadcast(filename)    
 
 async def handle_client(websocket):
     # クライアントを登録
