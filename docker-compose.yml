@@ -34,6 +34,18 @@ services:
       - volume_postgres:/var/lib/postgresql/data
       - volume_initdb:/docker-entrypoint-initdb.d
 
+  fastapi:
+    build: ./fastapi  # 別ディレクトリにDockerfileを用意
+    container_name: fastapi_app_container
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./work-fastapi:/work
+    working_dir: /work
+    env_file:
+      - .env  # ← ここで .env ファイルを指定     
+    command: uvicorn main:app --host 0.0.0.0 --port 8080 --reload
+
   # うまくいかなかった
   # service_pgadmin:
   #   image: pgadmin4:7.8

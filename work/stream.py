@@ -16,7 +16,8 @@ import subprocess
 import aiohttp
 import re
 
-VOICE_VOX_API_URL = "http://host.docker.internal:50021"
+# VOICE_VOX_API_URL = "http://host.docker.internal:50021"
+VOICE_VOX_API_URL = "http://172.17.0.1:50021"
 
 os.environ['TZ'] = 'Asia/Tokyo'
 
