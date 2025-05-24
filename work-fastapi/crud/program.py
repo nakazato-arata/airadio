@@ -28,7 +28,7 @@ def delete_program(db: Session, program_id: int):
 def update_program(db: Session, program_id: int, program_data: ProgramCreate):
     program = get_program(db, program_id)
     if program:
-        program.name = program_data.contents
+        program.contents = program_data.contents
         program.start_date = program_data.start_date
         program.end_date = program_data.end_date
         program.start_time = program_data.start_time

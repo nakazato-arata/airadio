@@ -25,10 +25,27 @@
       <td>{{ program.start_time or '' }}</td>
       <td>{{ program.end_time or '' }}</td>
       <td>{{ program.created_at or '' }}</td>
+      <td><button onclick="location.href='/programs/form/{{ program.id }}'">更新</button></td>
+      <td><button onclick="deleteUser('{{ program.id }}')">削除</button></td>
     </tr>
     {% endfor %}
   </table>
   <br>
   <a href="/programs/form">新規登録へ</a>
+
+  <script>
+    async function deleteUser(id) {
+      if (!confirm("本当に削除しますか？")) return;
+      const response = await fetch(`/programs/${id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        alert("削除しました");
+        window.location.reload();
+      } else {
+        alert("削除に失敗しました");
+      }
+    }
+  </script>
 </body>
 </html>

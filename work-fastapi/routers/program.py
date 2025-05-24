@@ -31,9 +31,16 @@ def read_programs(db: Session = Depends(get_db)):
 # def search_programs(name: str = Query(..., min_length=1), db: Session = Depends(get_db)):
 #     return schema_program.search_programs_by_name(db, name_query=name)
 
-@router.get("/form", response_class=HTMLResponse)
-async def read_form(request: Request):
-    return templates.TemplateResponse("program_form.html", {"request": request})
+@router.get("/form/{program_id}", response_class=HTMLResponse)
+async def read_form(request: Request, program_id: int, db: Session = Depends(get_db)):
+    # return templates.TemplateResponse("program_form.html", {"request": request})
+    program = crud_program.get_program(db, program_id)  # DBからデータを取得
+    return templates.TemplateResponse("program_form.html", {
+        "request": request,
+        "program": program
+    })
+
+
 
 # @router.get("/list", response_class=HTMLResponse)
 # async def program_list_page(request: Request):
@@ -74,3 +81,16 @@ def search_by_datetime(
     db: Session = Depends(get_db)
 ):
     return crud_program.search_program_by_datetime(db, target_date=date_, target_time=time_)
+
+
+@router.put("/{program_id}")
+async def update_program(
+    program_id: int,
+    update_data: schema_program.ProgramUpdate,  # ←ここを変更
+    db: Session = Depends(get_db)
+):
+    program = crud_program.get_program(db, program_id)
+    if not program:
+        raise HTTPException(status_code=404, detail="program not found")
+    
+    return crud_program.update_program(db, program_id, update_data)

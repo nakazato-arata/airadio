@@ -376,6 +376,10 @@ seikakuYoru += "ブレジスト・アイ:修羅の眼"
 seikakuYoru += "ホワイト・アウト:零眼"
 
 # メッセージ履歴
+# 配列
+# 0 = system　役割付け
+# 1 = コーナー
+# 2以降 = ユーザーとアシスタントのやり取り
 messages = [{"role": "system", "content": seikaku}]
 
 # 接続中のクライアント
@@ -399,6 +403,9 @@ async def openAiRequest(text):
     else:
         messages[0]["content"] = seikaku
 
+    # コーナー
+    messages[1]["role"] = 'user'
+    messages[1]["content"] = '☆DBから取得、設定'
 
     """ OpenAI API へリクエストを送り、返答を取得する """
     # client = OpenAI(api_key=XAI_API_KEY, base_url=AI_URL)
@@ -444,8 +451,9 @@ async def openAiRequest(text):
         messages.append({"role": "assistant", "content": response_text})
         # print(response_text)
         # 履歴が10件以上なら古いものを削除
-        if len(messages) > 5:
-            messages.pop(1)
+        if len(messages) > 10:
+            messages.pop(2)
+            messages.pop(2)
 
         return response_text
 
