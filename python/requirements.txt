@@ -1,6 +1,0 @@
-requests
-flask
-debugpy
-ptvsd
-openai
-pydub

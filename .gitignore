@@ -1,8 +1,0 @@
-work/wav/*
-work/__pycache__/*
-work05/__pycache__/*
-work06/__pycache__/*
-work06Unity/__pycache__/*
-work/dev/wav/*
-.env
-
