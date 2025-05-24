@@ -1,0 +1,72 @@
+
+services:
+  python:
+    build: python
+    container_name: python_app_container
+    ports:
+      - "8000:9540"
+      - "8001:9541"
+      - "8002:9542"
+      - "5001:5001"  # デバッガ用ポート
+    volumes:
+      - ./work:/work
+    environment:
+      - PYTHONUNBUFFERED=1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    working_dir: /work
+    env_file:
+      - .env  # ← ここで .env ファイルを指定    
+    command: ["python", "app.py"]
+
+  service_postgres:
+    image: postgres:16.1
+    container_name: container_postgres
+    build: docker/postgres
+    environment: 
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=razio
+      - POSTGRES_DB=postgres
+      - POSTGRES_INITDB_ARGS=--locale=ja_JP.utf8
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - volume_postgres:/var/lib/postgresql/data
+      - volume_initdb:/docker-entrypoint-initdb.d
+
+  fastapi:
+    build: ./fastapi  # 別ディレクトリにDockerfileを用意
+    container_name: fastapi_app_container
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./work-fastapi:/work
+    working_dir: /work
+    env_file:
+      - .env  # ← ここで .env ファイルを指定     
+    command: uvicorn main:app --host 0.0.0.0 --port 8080 --reload
+
+  # うまくいかなかった
+  # service_pgadmin:
+  #   image: pgadmin4:7.8
+  #   container_name: container_pgadmin
+  #   build: docker/pgadmin4
+  #   ports:
+  #     - 8088:80
+  #   volumes:
+  #     - volume_pgadmin:/var/lib/pgadmin
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: example@example.com
+  #     PGADMIN_DEFAULT_PASSWORD: urikahaoishii
+  #     PGADMIN_CONFIG_SCRIPT_NAME: '/pgadmin'
+  #   depends_on:
+  #     - service_postgres
+
+volumes:
+  volume_postgres:
+    name: vpostgres
+  volume_initdb:
+    name: vinitdb
+
+  # volume_pgadmin:
+  #   name: vpgadmin

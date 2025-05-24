@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Program 登録フォーム</title>
+</head>
+<body>
+  <h2>Program 登録</h2>
+  <form id="programForm">
+    <label>内容（contents）:</label><br>
+    <textarea name="contents" rows="3" cols="40" required></textarea><br><br>
+
+    <label>開始日（start_date）:</label><br>
+    <input type="date" name="start_date"><br><br>
+
+    <label>終了日（end_date）:</label><br>
+    <input type="date" name="end_date"><br><br>
+
+    <label>開始時刻（start_time）:</label><br>
+    <input type="time" name="start_time"><br><br>
+
+    <label>終了時刻（end_time）:</label><br>
+    <input type="time" name="end_time"><br><br>
+
+    <button type="submit">送信</button>
+  </form>
+
+  <p id="result"></p>
+
+  <script>
+    document.getElementById('programForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        contents: form.contents.value,
+        start_date: form.start_date.value || null,
+        end_date: form.end_date.value || null,
+        start_time: form.start_time.value || null,
+        end_time: form.end_time.value || null,
+      };
+
+      const response = await fetch("/programs/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        // document.getElementById("result").innerText = "登録しました。";
+        // form.reset();
+
+        // window.location.href = "/users/list-html";   
+        window.location.href = "/programs/list";  // 一覧ページへ遷移
+
+      } else {
+        const error = await response.json();
+        document.getElementById("result").innerText = "エラー: " + JSON.stringify(error.detail);
+      }
+    });
+  </script>
+</body>
+</html>

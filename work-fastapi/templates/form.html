@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>ユーザー登録</title>
+</head>
+<body>
+  <h2>ユーザー登録（JSON送信）</h2>
+  <form id="user-form">
+    <label for="name">名前:</label>
+    <input type="text" id="name" name="name" required />
+    <button type="submit">登録</button>
+  </form>
+
+  <p id="result"></p>
+
+  <script>
+    const form = document.getElementById("user-form");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const name = document.getElementById("name").value;
+
+      const response = await fetch("/users/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name: name })
+      });
+
+      const result = document.getElementById("result");
+
+      if (response.ok) {
+        // const data = await response.json();
+        // result.textContent = `登録成功: ユーザーID = ${data.id}`;
+
+        // 登録成功 → 一覧ページへリダイレクト
+        window.location.href = "/users/list-html";        
+      } else {
+        const error = await response.json();
+        result.textContent = `登録失敗: ${JSON.stringify(error.detail)}`;
+      }
+    });
+  </script>
+</body>
+</html>
